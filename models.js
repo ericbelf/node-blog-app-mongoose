@@ -9,7 +9,8 @@ const blogSchema = mongoose.Schema({
     firstName: String,
     lastName: String
           },
-  content: {type: String, required: true}
+  content: {type: String, required: true},
+  created: {type: Date, default: Date.now}
 
 });
 
@@ -32,6 +33,7 @@ blogSchema.methods.serialize = function() {
     title: this.title,
     author: this.authorString,
     content: this.content,
+    created: this.created
   };
 }
 
