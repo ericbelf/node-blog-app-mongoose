@@ -19,12 +19,7 @@ app.use(express.json());
 app.get('/blogentries', (req, res) => {
   BlogEntry
     .find()
-    // we're limiting because restaurants db has > 25,000
-    // documents, and that's too much to process/return
-    .limit(3)
-    // success callback: for each restaurant we got back, we'll
-    // call the `.serialize` instance method we've created in
-    // models.js in order to only expose the data we want the API return.
+    
     .then(blogentries => {
       res.json({
         blogentries: blogentries.map(
