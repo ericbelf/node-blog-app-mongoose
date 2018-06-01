@@ -10,25 +10,25 @@ mongoose.Promise = global.Promise;
 // config.js is where we control constants for entire
 // app like PORT and DATABASE_URL
 const { PORT, DATABASE_URL } = require('./config');
-const { Restaurant } = require('./models');
+const { BlogEntry } = require('./models');
 
 const app = express();
 app.use(express.json());
 
 // GET requests to /restaurants => return 10 restaurants
-app.get('/restaurants', (req, res) => {
-  Restaurant
+app.get('/blogentries', (req, res) => {
+  BlogEntry
     .find()
     // we're limiting because restaurants db has > 25,000
     // documents, and that's too much to process/return
-    .limit(10)
+    .limit(3)
     // success callback: for each restaurant we got back, we'll
     // call the `.serialize` instance method we've created in
     // models.js in order to only expose the data we want the API return.
-    .then(restaurants => {
+    .then(blogentries => {
       res.json({
-        restaurants: restaurants.map(
-          (restaurant) => restaurant.serialize())
+        blogentries: blogentries.map(
+          (blogentry) => blogentry.serialize())
       });
     })
     .catch(err => {
@@ -38,12 +38,12 @@ app.get('/restaurants', (req, res) => {
 });
 
 // can also request by ID
-app.get('/restaurants/:id', (req, res) => {
-  Restaurant
+app.get('/blogentries/:id', (req, res) => {
+  BlogEntry
     // this is a convenience method Mongoose provides for searching
     // by the object _id property
     .findById(req.params.id)
-    .then(restaurant => res.json(restaurant.serialize()))
+    .then(blogentry => res.json(blogentry.serialize()))
     .catch(err => {
       console.error(err);
       res.status(500).json({ message: 'Internal server error' });
@@ -51,9 +51,9 @@ app.get('/restaurants/:id', (req, res) => {
 });
 
 
-app.post('/restaurants', (req, res) => {
+app.post('/blogentries', (req, res) => {
 
-  const requiredFields = ['name', 'borough', 'cuisine'];
+  const requiredFields = ['title', 'author', 'content'];
   for (let i = 0; i < requiredFields.length; i++) {
     const field = requiredFields[i];
     if (!(field in req.body)) {
@@ -63,15 +63,14 @@ app.post('/restaurants', (req, res) => {
     }
   }
 
-  Restaurant
+  BlogEntry
     .create({
-      name: req.body.name,
-      borough: req.body.borough,
-      cuisine: req.body.cuisine,
-      grades: req.body.grades,
-      address: req.body.address
+      title: req.body.title,
+      author: req.body.author,
+      content: req.body.content,
+      
     })
-    .then(restaurant => res.status(201).json(restaurant.serialize()))
+    .then(blogentry => res.status(201).json(blogentry.serialize()))
     .catch(err => {
       console.error(err);
       res.status(500).json({ message: 'Internal server error' });
@@ -79,7 +78,7 @@ app.post('/restaurants', (req, res) => {
 });
 
 
-app.put('/restaurants/:id', (req, res) => {
+app.put('/blogentries/:id', (req, res) => {
   // ensure that the id in the request path and the one in request body match
   if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
     const message = (
@@ -93,7 +92,7 @@ app.put('/restaurants/:id', (req, res) => {
   // if the user sent over any of the updatableFields, we udpate those values
   // in document
   const toUpdate = {};
-  const updateableFields = ['name', 'borough', 'cuisine', 'address'];
+  const updateableFields = ['title', 'author', 'content'];
 
   updateableFields.forEach(field => {
     if (field in req.body) {
@@ -101,17 +100,17 @@ app.put('/restaurants/:id', (req, res) => {
     }
   });
 
-  Restaurant
+  BlogEntry
     // all key/value pairs in toUpdate will be updated -- that's what `$set` does
     .findByIdAndUpdate(req.params.id, { $set: toUpdate })
-    .then(restaurant => res.status(204).end())
+    .then(blogentry => res.status(204).end())
     .catch(err => res.status(500).json({ message: 'Internal server error' }));
 });
 
-app.delete('/restaurants/:id', (req, res) => {
-  Restaurant
+app.delete('/blogentries/:id', (req, res) => {
+  BlogEntry
     .findByIdAndRemove(req.params.id)
-    .then(restaurant => res.status(204).end())
+    .then(blogentry => res.status(204).end())
     .catch(err => res.status(500).json({ message: 'Internal server error' }));
 });
 
